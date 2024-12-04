@@ -17,7 +17,8 @@ This project is built using TypeScript and Node.js to solve the daily challenges
 ```
 advent-of-code-2024/
 ├── src/
-│ └── dayXX/ # Solutions for each day
+│ └── day-XX/ # Solutions for each day
+    └── explanation.txt # Explanation for the day's puzzle
 │   └── input.txt # Input data for the day's puzzle
 │   └── index.ts # Solution implementation
 ├── utils/
@@ -64,7 +65,7 @@ const input = getInputValues('path/to/input.txt');
 
 ## Progress Tracking ⭐⭐
 
-- [ ] Day 1
+- [x] Day 1 ⭐⭐
 - [ ] Day 2
 - [ ] Day 3
 - [ ] ...
