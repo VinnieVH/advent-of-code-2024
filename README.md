@@ -66,7 +66,7 @@ const input = getInputValues('path/to/input.txt');
 ## Progress Tracking ⭐⭐
 
 - [x] Day 1 ⭐⭐
-- [ ] Day 2
+- [x] Day 2 ⭐⭐
 - [ ] Day 3
 - [ ] ...
 - [ ] Day 25
