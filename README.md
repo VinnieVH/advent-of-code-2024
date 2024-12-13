@@ -70,6 +70,7 @@ const input = getInputValues('path/to/input.txt');
 - [x] Day 3 ⭐⭐
 - [x] Day 4 ⭐⭐
 - [x] Day 5 ⭐⭐
+- [x] Day 6 ⭐⭐
 - [ ] ...
 - [ ] Day 25
 
