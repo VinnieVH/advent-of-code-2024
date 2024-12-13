@@ -13,6 +13,7 @@ enum MovingDirection {
 }
 
 const input = getInputValues('src/day-6/input.txt');
+const visitedPositions = new Set<string>();
 
 const getNextPosition = (currentPos: Coords, direction: MovingDirection): Coords => {
     switch (direction) {
@@ -36,53 +37,121 @@ const turnRight = (direction: MovingDirection): MovingDirection => {
     }
 };
 
-const visitedPositions = new Set<string>();
+const isPositionOutOfBounds = (pos: Coords): boolean => {
+    return pos.xAxis < 0 || pos.xAxis >= input[0].length ||
+           pos.yAxis < 0 || pos.yAxis >= input.length;
+};
 
-// Find starting position more efficiently
-let startX = 0, startY = 0;
-for (let y = 0; y < input.length; y++) {
-    const x = input[y].indexOf('^');
-    if (x !== -1) {
-        startX = x;
-        startY = y;
-        break;
+const findStartingPosition = (): Coords => {
+    for (let y = 0; y < input.length; y++) {
+        const x = input[y].indexOf('^');
+        if (x !== -1) {
+            return { xAxis: x, yAxis: y };
+        }
     }
-}
+};
 
-let currentPosition: Coords = { xAxis: startX, yAxis: startY };
+const createPositionKey = (pos: Coords): string => {
+    return `${pos.xAxis},${pos.yAxis}`;
+};
+
+const createStateKey = (pos: Coords, dir: MovingDirection): string => {
+    return `${pos.xAxis},${pos.yAxis},${dir}`;
+};
+
+const simulateMove = (pos: Coords, dir: MovingDirection, grid: string[][]): { newPos: Coords, newDir: MovingDirection } => {
+    const nextPos = getNextPosition(pos, dir);
+    
+    if (grid[nextPos.yAxis][nextPos.xAxis] === '#') {
+        return { newPos: pos, newDir: turnRight(dir) };
+    }
+    
+    return { newPos: nextPos, newDir: dir };
+};
+
+// Initialize starting position and direction
+const startingPos = findStartingPosition();
+let currentPosition: Coords = startingPos;
 let currentDirection = MovingDirection.Up;
 
 // Add initial position
-visitedPositions.add(`${currentPosition.xAxis},${currentPosition.yAxis}`);
+visitedPositions.add(createPositionKey(currentPosition));
 
 const calculateVisitedTiles = (): void => {
     let isOutside = false;
     
     while (!isOutside) {
-        // Get next position
-        const nextPosition: Coords = getNextPosition({ 
-            xAxis: currentPosition.xAxis, 
-            yAxis: currentPosition.yAxis
-        }, currentDirection);
+        const nextPosition = getNextPosition(currentPosition, currentDirection);
         
-        // Check if guard has left the area
-        if (nextPosition.xAxis < 0 || nextPosition.xAxis >= input[0].length ||
-            nextPosition.yAxis < 0 || nextPosition.yAxis >= input.length) {
+        if (isPositionOutOfBounds(nextPosition)) {
             isOutside = true;
             break;
         }
         
-        // Check if next position is valid (not an object)
-        if (input[nextPosition.yAxis][nextPosition.xAxis] === '#') {
-            currentDirection = turnRight(currentDirection);
-        } else {
-            currentPosition = nextPosition;
-            visitedPositions.add(`${currentPosition.xAxis},${currentPosition.yAxis}`);
+        const { newPos, newDir } = simulateMove(currentPosition, currentDirection, input.map(row => row.split('')));
+        currentPosition = newPos;
+        currentDirection = newDir;
+        
+        visitedPositions.add(createPositionKey(currentPosition));
+    }
+};
+
+const checksForLoop = (obstacleX: number, obstacleY: number): boolean => {
+    const modifiedInput = input.map(row => row.split(''));
+    modifiedInput[obstacleY][obstacleX] = '#';
+    
+    const visited = new Set<string>();
+    let pos = findStartingPosition();
+    let dir = MovingDirection.Up;
+    
+    while (true) {
+        const stateKey = createStateKey(pos, dir);
+        
+        if (visited.has(stateKey)) {
+            return true;
+        }
+        
+        visited.add(stateKey);
+        
+        const nextPos = getNextPosition(pos, dir);
+        
+        if (isPositionOutOfBounds(nextPos)) {
+            return false;
+        }
+        
+        const { newPos, newDir } = simulateMove(pos, dir, modifiedInput);
+        pos = newPos;
+        dir = newDir;
+    }
+};
+
+const findLoopPositions = (): number => {
+    let loopCount = 0;
+    
+    for (let y = 0; y < input.length; y++) {
+        for (let x = 0; x < input[0].length; x++) {
+            // Skip if position already has obstacle or is starting position
+            if (input[y][x] === '#' || (x === startingPos.xAxis && y === startingPos.yAxis)) {
+                continue;
+            }
+            
+            if (checksForLoop(x, y)) {
+                loopCount++;
+            }
         }
     }
-}
+    
+    return loopCount;
+};
 
+// Part 1
 console.time('guard patrolling');
 calculateVisitedTiles();
-console.log(visitedPositions.size);
+console.log('Part 1:', visitedPositions.size);
 console.timeEnd('guard patrolling');
+
+// Part 2
+console.time('finding loops');
+const loopPositions = findLoopPositions();
+console.log('Part 2:', loopPositions);
+console.timeEnd('finding loops');
