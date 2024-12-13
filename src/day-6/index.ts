@@ -49,6 +49,7 @@ const findStartingPosition = (): Coords => {
             return { xAxis: x, yAxis: y };
         }
     }
+    throw new Error('No starting position found');
 };
 
 const createPositionKey = (pos: Coords): string => {
