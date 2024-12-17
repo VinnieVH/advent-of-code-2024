@@ -32,7 +32,7 @@ advent-of-code-2024/
 1. Clone the repository: 
 
     ```bash
-    git clone https://github.com/[your-username]/advent-of-code-2024.git
+    git clone https://github.com/VinnieVH/advent-of-code-2024.git
     cd advent-of-code-2024
     ```
 
@@ -47,7 +47,14 @@ advent-of-code-2024/
     ```bash
     pnpm ts-node src/dayXX/index.ts
     ```
+    
+## Creating New Day Solutions
 
+To generate the folder structure for a new day's solution, use the generator script:
+
+```bash
+pnpm generate <day-number>
+```
 
 ## Solutions
 
