@@ -2,7 +2,8 @@ import { getInputValues } from "../../utils/helpers";
 
 enum Operator {
   ADD = '+',
-  MULTIPLY = '*'
+  MULTIPLY = '*',
+  CONCATENATE = '||'
 }
 
 type Expression = {
@@ -12,35 +13,66 @@ type Expression = {
 
 type OperatorArray = Operator[];
 
-// Evaluates expression left-to-right without operator precedence
+const parseLine = (line: string): Expression => {
+  const [targetStr, numbersStr] = line.split(':');
+  return {
+    target: parseInt(targetStr),
+    numbers: numbersStr.trim().split(' ').map(n => parseInt(n))
+  };
+};
+
 const evaluateExpression = (numbers: number[], operators: OperatorArray): number => {
   let result = numbers[0];
   for (let i = 0; i < operators.length; i++) {
     const operator = operators[i];
     const nextNum = numbers[i + 1];
-    result = operator === Operator.ADD ? result + nextNum : result * nextNum;
+    switch (operator) {
+      case Operator.ADD:
+        result += nextNum;
+        break;
+      case Operator.MULTIPLY:
+        result *= nextNum;
+        break;
+      case Operator.CONCATENATE:
+        result = parseInt(`${result}${nextNum}`);
+        break;
+    }
   }
   return result;
 };
 
-// Generates all possible operator combinations
-function* generateOperators(length: number): Generator<OperatorArray> {
+// Generator functions use function* syntax to create iterators
+// They can pause execution using 'yield' and resume later
+const generateOperatorsBase = function* (
+  length: number, 
+  availableOperators: Operator[]
+): Generator<OperatorArray> {
   if (length === 0) {
     yield [];
     return;
   }
   
-  for (const subCombo of generateOperators(length - 1)) {
-    yield [...subCombo, Operator.ADD];
-    yield [...subCombo, Operator.MULTIPLY];
+  for (const subCombo of generateOperatorsBase(length - 1, availableOperators)) {
+    for (const operator of availableOperators) {
+      yield [...subCombo, operator];
+    }
   }
-}
+};
 
-// Checks if any operator combination can produce the target value
-const canMakeTarget = (numbers: number[], target: number): boolean => {
+const generateOperators = (length: number): Generator<OperatorArray> => 
+  generateOperatorsBase(length, [Operator.ADD, Operator.MULTIPLY]);
+
+const generateOperatorsPart2 = (length: number): Generator<OperatorArray> => 
+  generateOperatorsBase(length, [Operator.ADD, Operator.MULTIPLY, Operator.CONCATENATE]);
+
+const canMakeTarget = (
+  numbers: number[], 
+  target: number,
+  operatorGenerator: (length: number) => Generator<OperatorArray>
+): boolean => {
   const operatorsNeeded = numbers.length - 1;
   
-  for (const operators of generateOperators(operatorsNeeded)) {
+  for (const operators of operatorGenerator(operatorsNeeded)) {
     if (evaluateExpression(numbers, operators) === target) {
       return true;
     }
@@ -48,26 +80,35 @@ const canMakeTarget = (numbers: number[], target: number): boolean => {
   return false;
 };
 
-// Parses a line into an Expression object
-const parseLine = (line: string): Expression => {
-  const [targetStr, numbersStr] = line.split(": ");
-  return {
-    target: parseInt(targetStr),
-    numbers: numbersStr.split(" ").map(Number)
-  };
-};
+const canMakeTargetPart1 = (numbers: number[], target: number): boolean => 
+  canMakeTarget(numbers, target, generateOperators);
 
-const solve = (): number => {
+const canMakeTargetPart2 = (numbers: number[], target: number): boolean => 
+  canMakeTarget(numbers, target, generateOperatorsPart2);
+
+const solve = (
+  checkFunction: (numbers: number[], target: number) => boolean
+): number => {
   const lines = getInputValues("src/day-7/input.txt");
   
   return lines
     .filter(line => line.length > 0)
     .map(parseLine)
     .reduce((sum, { numbers, target }) => 
-      canMakeTarget(numbers, target) ? sum + target : sum, 
+      checkFunction(numbers, target) ? sum + target : sum, 
     0);
 };
 
-console.time('Solving');
-console.log(solve());
-console.timeEnd('Solving');
+const solvePart1 = (): number => solve(canMakeTargetPart1);
+const solvePart2 = (): number => solve(canMakeTargetPart2);
+
+// Run both parts with timing
+const runWithTiming = (part: number, solveFn: () => number) => {
+  console.log(`Part ${part}:`);
+  console.time(`Part ${part} Time`);
+  console.log(solveFn());
+  console.timeEnd(`Part ${part} Time`);
+};
+
+runWithTiming(1, solvePart1);
+runWithTiming(2, solvePart2);
