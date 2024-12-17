@@ -4,6 +4,9 @@
   "description": "A project for Advent of Code",
   "author": "Vincent Van Herreweghe",
   "license": "MIT",
+  "scripts": {
+    "generate": "ts-node utils/generate-day.ts"
+  },
   "devDependencies": {
     "@types/node": "^22.10.1",
     "ts-node": "^10.9.2",
