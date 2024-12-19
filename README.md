@@ -80,6 +80,8 @@ const input = getInputValues('path/to/input.txt');
 - [x] Day 6 ⭐⭐
 - [x] Day 7 ⭐⭐
 - [x] Day 8 ⭐⭐
+- [ ] Day 9
+- [x] Day 10 ⭐
 - [ ] ...
 - [ ] Day 25
 
